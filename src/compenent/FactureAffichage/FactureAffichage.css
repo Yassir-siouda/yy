@@ -1,0 +1,167 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  margin: 0;
+}
+
+.appaffichage {
+  display: flex;
+  margin: 0;
+}
+
+/* Menu */
+.menu {
+  flex: 0 0 200px;
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+}
+
+.menu h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+}
+
+
+.facture-affichage-container {
+  flex: 1;
+  padding: 20px;
+  
+}
+
+.facture-affichage-container h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+}
+
+.search-container {
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.search-icon {
+  position: relative;
+  top: -32px;
+  left: 95%;
+}
+
+
+.totals-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.total {
+  background-color: #fff;
+  padding: 10px;
+  border-radius: 5px;
+  flex: 0 0 calc(50% - 10px);
+}
+
+.total h3 {
+  font-size: 1rem;
+  margin-bottom: 5px;
+}
+
+.total p {
+  font-size: 1.2rem;
+}
+
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+}
+
+table th,
+table td {
+  padding: 10px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+
+table th {
+  background-color: #f2f2f2;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+
+input[type='text'],
+input[type='number'],
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+
+.action-btn {
+  padding: 8px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.save-btn {
+  background-color: #4caf50;
+  color: #fff;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.edit-btn {
+  background-color: #2196f3;
+  color: #fff;
+}
+
+.delete-btn {
+  background-color: #f44336;
+  color: #fff;
+}
+
+
+@media only screen and (max-width: 768px) {
+  .appaffichage {
+    flex-direction: column;
+    margin-top: -600px;
+  }
+  
+  .menu {
+    flex: 0 0 100%;
+    order: 1;
+  }
+  
+  .facture-affichage-container {
+    order: 2;
+   
+  }
+}
