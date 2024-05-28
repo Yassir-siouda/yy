@@ -1,8 +1,8 @@
-// Profile.jsx
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom'; // Importez useParams pour obtenir les paramètres de l'URL
+import { useParams } from 'react-router-dom'; 
 import supabase from '../../supabase';
 import Menu from '../Menu/Menu';
+import CryptoJS from 'crypto-js';
 import './Profile.css';
 
 function ProfilePage() {
@@ -10,7 +10,10 @@ function ProfilePage() {
         nom: '', prenom: '', email: '', adresse: '', dateNaissance: '', telephone: ''
     });
     const [isEditing, setIsEditing] = useState(false);
-    const { userId } = useParams(); // Récupérez l'ID de l'utilisateur depuis l'URL dynamique
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const { userId } = useParams(); 
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -51,14 +54,35 @@ function ProfilePage() {
         }
     };
 
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            alert('Les mots de passe ne correspondent pas.');
+            return;
+        }
+
+        const hashedPassword = CryptoJS.SHA256(newPassword).toString();
+
+        const { error } = await supabase
+            .from('Authentification')
+            .update({ password: hashedPassword })
+            .eq('id', userId);
+
+        if (error) {
+            alert('Erreur lors de la mise à jour du mot de passe:', error.message);
+        } else {
+            alert('Mot de passe mis à jour avec succès.');
+            setIsChangingPassword(false);
+            setNewPassword('');
+            setConfirmPassword('');
+        }
+    };
+
     return (
-        
         <div className="app">
             <Menu />
-            
             <div className="profile-content">
-                {!isEditing ? (
-                    
+                {!isEditing && !isChangingPassword ? (
                     <div className="profile-info">
                         <h2>Profil Utilisateur</h2>
                         <p><strong>Nom:</strong> {profile.nom}</p>
@@ -68,8 +92,9 @@ function ProfilePage() {
                         <p><strong>Date de Naissance:</strong> {profile.dateNaissance}</p>
                         <p><strong>Téléphone:</strong> {profile.telephone}</p>
                         <button onClick={() => setIsEditing(true)}>Modifier le Profil</button>
+                        <button onClick={() => setIsChangingPassword(true)}>Changer le Mot de Passe</button>
                     </div>
-                ) : (
+                ) : isEditing ? (
                     <form onSubmit={handleSubmit} className="profile-form">
                         <div className="form-group">
                             <label>Nom</label>
@@ -98,6 +123,21 @@ function ProfilePage() {
                         <div className="form-actions">
                             <button type="submit" className="save-button">Sauvegarder les Changements</button>
                             <button type="button" className="cancel-button" onClick={() => setIsEditing(false)}>Annuler</button>
+                        </div>
+                    </form>
+                ) : (
+                    <form onSubmit={handlePasswordChange} className="password-form">
+                        <div className="form-group">
+                            <label>Nouveau mot de passe</label>
+                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
+                        </div>
+                        <div className="form-group">
+                            <label>Confirmer le nouveau mot de passe</label>
+                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
+                        </div>
+                        <div className="form-actions">
+                            <button type="submit" className="save-button">Sauvegarder le mot de passe</button>
+                            <button type="button" className="cancel-button" onClick={() => setIsChangingPassword(false)}>Annuler</button>
                         </div>
                     </form>
                 )}
