@@ -18,6 +18,7 @@ const Clients = () => {
     Email: '',
     Telephone: '',
   });
+  const [selectedClientId, setSelectedClientId] = useState(null);
 
   const fetchClients = useCallback(async () => {
     const { data, error } = await supabase.from('Clients').select('*');
@@ -49,6 +50,7 @@ const Clients = () => {
       Email: '',
       Telephone: '',
     });
+    setSelectedClientId(null); // Réinitialise l'ID du client sélectionné
   };
 
   const handleInputChange = (e) => {
@@ -58,6 +60,16 @@ const Clients = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    if (selectedClientId) {
+      // Si un client est sélectionné, c'est une modification
+      await updateClient();
+    } else {
+      // Sinon, c'est un ajout
+      await addClient();
+    }
+  };
+
+  const addClient = async () => {
     const existingClient = clients.find(client => client.Email === formData.Email);
     if (existingClient) {
       alert('Ce client existe déjà.');
@@ -70,6 +82,23 @@ const Clients = () => {
     } else {
       console.error('Erreur lors de l\'ajout du client', error.message);
     }
+  };
+
+  const updateClient = async () => {
+    const { error } = await supabase.from('Clients').update(formData).match({ id: selectedClientId });
+    if (!error) {
+      fetchClients();
+      closeModal();
+    } else {
+      console.error('Erreur lors de la modification du client', error.message);
+    }
+  };
+
+  const handleEdit = (id) => {
+    const selectedClient = clients.find(client => client.id === id);
+    setFormData(selectedClient);
+    setSelectedClientId(id);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -99,7 +128,6 @@ const Clients = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-         
         </div>
         <div className="buttons-container">
           <button className="add-btn" onClick={openModal}>Ajouter un Client</button>
@@ -133,6 +161,7 @@ const Clients = () => {
                   <td>{client.Email}</td>
                   <td>{client.Telephone}</td>
                   <td>
+                    <button className="edit-btn action-btn" onClick={() => handleEdit(client.id)}>Modifier</button>
                     <button className="delete-btn action-btn" onClick={() => handleDelete(client.id)}>Supprimer</button>
                   </td>
                 </tr>
@@ -143,7 +172,7 @@ const Clients = () => {
       </div>
       {showModal && (
         <div className="modal">
-          <h2>Ajouter un Client</h2>
+          <h2>{selectedClientId ? 'Modifier' : 'Ajouter'} un Client</h2>
           <form onSubmit={handleFormSubmit}>
             <input type="text" name="Nom" placeholder="Nom" value={formData.Nom} onChange={handleInputChange} required />
             <input type="text" name="Prenom" placeholder="Prénom" value={formData.Prenom} onChange={handleInputChange} required />
@@ -154,7 +183,7 @@ const Clients = () => {
             <input type="text" name="ComplementAdresse" placeholder="Complément d'Adresse" value={formData.ComplementAdresse} onChange={handleInputChange} />
             <input type="email" name="Email" placeholder="Email" value={formData.Email} onChange={handleInputChange} required />
             <input type="tel" name="Telephone" placeholder="Téléphone" value={formData.Telephone} onChange={handleInputChange} required />
-            <button type="submit" className="save-btn action-btn">Ajouter</button>
+            <button type="submit" className="save-btn action-btn">{selectedClientId ? 'Modifier' : 'Ajouter'}</button>
             <button type="button" className="cancel-btn action-btn" onClick={closeModal}>Annuler</button>
           </form>
         </div>
@@ -164,3 +193,4 @@ const Clients = () => {
 };
 
 export default Clients;
+
