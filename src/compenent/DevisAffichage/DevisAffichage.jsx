@@ -15,6 +15,7 @@ const DevisAffichage = () => {
     TVA: '',
     TotalTTC: '',
     Status: '',
+    Commentaire: '',
   });
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -42,6 +43,7 @@ const DevisAffichage = () => {
       TVA: devis.TVA.toString(),
       TotalTTC: devis.TotalTTC.toString(),
       Status: devis.Status,
+      Commentaire: devis.Commentaire || '',
     });
     setShowModal(true);
   };
@@ -53,6 +55,7 @@ const DevisAffichage = () => {
       TVA: devis.TVA.toString(),
       TotalTTC: devis.TotalTTC.toString(),
       Status: devis.Status,
+      Commentaire: devis.Commentaire || '',
     });
     setShowModal(true);
   };
@@ -71,6 +74,7 @@ const DevisAffichage = () => {
         TVA: parseFloat(formData.TVA),
         TotalTTC: parseFloat(formData.TotalTTC),
         Status: formData.Status,
+        Commentaire: formData.Commentaire,
       })
       .match({ id: editId });
     if (!error) {
@@ -116,28 +120,6 @@ const DevisAffichage = () => {
     link.click();
   };
 
-  const handleImportCSV = (e) => {
-    const file = e.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const importedData = event.target.result;
-      const rows = importedData.split('\n');
-      const importedDevis = rows.map((row) => {
-        const values = row.split(',');
-        return {
-          Client: values[0],
-          TotalHT: values[1],
-          TVA: values[2],
-          TotalTTC: values[3],
-          Status: values[4],
-        };
-      });
-      setDevis(importedDevis);
-      setFilteredDevis(importedDevis);
-    };
-    reader.readAsText(file);
-  };
-
   const handleSearch = (e) => {
     const searchTerm = e.target.value.toLowerCase();
     const filtered = devis.filter((devis) =>
@@ -162,6 +144,9 @@ const DevisAffichage = () => {
     return '';
   };
 
+  const totalHT = filteredDevis.reduce((total, devis) => total + parseFloat(devis.TotalHT), 0);
+  const totalTTC = filteredDevis.reduce((total, devis) => total + parseFloat(devis.TotalTTC), 0);
+
   return (
     <div className="app">
       <Menu />
@@ -169,7 +154,6 @@ const DevisAffichage = () => {
         <h1>Gestion des Devis</h1>
         <div className="buttons-container">
           <button className="export-btn" onClick={handleExportCSV}>Exporter CSV</button>
-          <input type="file" onChange={handleImportCSV} accept=".csv" />
         </div>
         <input
           type="text"
@@ -182,35 +166,51 @@ const DevisAffichage = () => {
           <option value="Refusé">Refusé</option>
           <option value="En attente">En attente</option>
         </select>
-        <table>
-          <thead>
-            <tr>
-              <th>Client</th>
-              <th>Total HT</th>
-              <th>TVA (%)</th>
-              <th>Total TTC</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredDevis.map((devis) => (
-              <tr key={devis.id}>
-                <td>{devis.Client}</td>
-                <td>{devis.TotalHT}</td>
-                <td>{devis.TVA}</td>
-                <td>{devis.TotalTTC}</td>
-                <td className={getStatusClass(devis.Status)}>{devis.Status}</td>
-                <td>
-                  <button className="edit-btn" onClick={() => handleEdit(devis)}>Edit</button>
-                  <button className="view-btn" onClick={() => handleShow(devis)}>Voir</button>
-                  <button className="delete-btn" onClick={() => handleDelete(devis.id)}>Supprimer</button>
-                  <button className="convert-btn" onClick={() => handleConvertToFacture(devis.id)}>Convertir en Facture</button>
-                </td>
+
+        <div className="totals-container">
+          <div className="total">
+            <h3>Total HT</h3>
+            <p>{totalHT.toFixed(2)} €</p>
+          </div>
+          <div className="total">
+            <h3>Total TTC</h3>
+            <p>{totalTTC.toFixed(2)} €</p>
+          </div>
+        </div>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Total HT</th>
+                <th>TVA (%)</th>
+                <th>Total TTC</th>
+                <th>Status</th>
+                <th>Commentaire</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredDevis.map((devis) => (
+                <tr key={devis.id}>
+                  <td>{devis.Client}</td>
+                  <td>{devis.TotalHT}</td>
+                  <td>{devis.TVA}</td>
+                  <td>{devis.TotalTTC}</td>
+                  <td className={getStatusClass(devis.Status)}>{devis.Status}</td>
+                  <td>{devis.Commentaire}</td>
+                  <td>
+                    <button className="edit-btn" onClick={() => handleEdit(devis)}>Edit</button>
+                    <button className="view-btn" onClick={() => handleShow(devis)}>Voir</button>
+                    <button className="delete-btn" onClick={() => handleDelete(devis.id)}>Supprimer</button>
+                    <button className="convert-btn" onClick={() => handleConvertToFacture(devis.id)}>Convertir en Facture</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      
       </div>
       <Modal
         isOpen={showModal}
@@ -231,6 +231,7 @@ const DevisAffichage = () => {
               <option value="Refusé">Refusé</option>
             </select>
           </p>
+          <p>Commentaire: <input type="text" value={formData.Commentaire} onChange={(e) => setFormData({ ...formData, Commentaire: e.target.value })} /></p>
           <button className="save" onClick={handleSave}>Sauvegarder</button>
           <button className="cancel" onClick={handleCloseModal}>Annuler</button>
         </div>
