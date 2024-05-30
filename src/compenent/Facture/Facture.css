@@ -1,14 +1,12 @@
 /* Facture.css */
-.app {
+.appaffichage {
   display: flex;
   height: 100vh;
   background: #f4f7fa;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
-.menu {
-  /* Assurez-vous de définir votre propre style de menu ici. */
-}
+
 
 .facture-content {
   flex: 1;
@@ -61,7 +59,7 @@
   background-color: #4cae4c;
 }
 
-/* Style pour les rangées avec deux éléments côte à côte */
+
 .row {
   display: flex;
   justify-content: space-between;
@@ -72,15 +70,25 @@
   flex: 1;
 }
 
-/* Responsive design */
 @media (max-width: 768px) {
   .row {
     flex-direction: column;
+   
   }
 
   .column {
     width: 100%;
+    
   }
+
+  .facture-content {
+    
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    margin-top : -600px;
+  }
+
 }
 
 
