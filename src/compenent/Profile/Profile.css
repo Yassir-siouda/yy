@@ -159,6 +159,7 @@ button[type='button']:hover {
   .profile-form,
   .password-form {
     padding: 20px;
+    margin-top: -500px;
   }
 
   .profile-info p strong {
