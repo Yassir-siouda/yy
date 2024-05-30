@@ -1,149 +1,169 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom'; 
-import supabase from '../../supabase';
-import Menu from '../Menu/Menu';
-import CryptoJS from 'crypto-js';
-import './Profile.css';
-
-function ProfilePage() {
-    const [profile, setProfile] = useState({
-        nom: '', prenom: '', email: '', adresse: '', dateNaissance: '', telephone: ''
-    });
-    const [isEditing, setIsEditing] = useState(false);
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const { userId } = useParams(); 
-
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const { data, error } = await supabase
-                .from('Authentification')
-                .select('*')
-                .eq('id', userId)
-                .single();
-
-            if (error) {
-                console.error('Erreur lors du chargement du profil:', error);
-                return;
-            }
-
-            setProfile(data);
-        };
-
-        fetchProfile();
-    }, [userId]);
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setProfile({ ...profile, [name]: value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const { error } = await supabase
-            .from('Authentification')
-            .update(profile)
-            .eq('id', userId);
-
-        if (error) {
-            alert('Erreur lors de la mise à jour:', error.message);
-        } else {
-            alert('Profil mis à jour avec succès.');
-            setIsEditing(false);
-        }
-    };
-
-    const handlePasswordChange = async (e) => {
-        e.preventDefault();
-        if (newPassword !== confirmPassword) {
-            alert('Les mots de passe ne correspondent pas.');
-            return;
-        }
-
-        const hashedPassword = CryptoJS.SHA256(newPassword).toString();
-
-        const { error } = await supabase
-            .from('Authentification')
-            .update({ password: hashedPassword })
-            .eq('id', userId);
-
-        if (error) {
-            alert('Erreur lors de la mise à jour du mot de passe:', error.message);
-        } else {
-            alert('Mot de passe mis à jour avec succès.');
-            setIsChangingPassword(false);
-            setNewPassword('');
-            setConfirmPassword('');
-        }
-    };
-
-    return (
-        <div className="app">
-            <Menu />
-            <div className="profile-content">
-                {!isEditing && !isChangingPassword ? (
-                    <div className="profile-info">
-                        <h2>Profil Utilisateur</h2>
-                        <p><strong>Nom:</strong> {profile.nom}</p>
-                        <p><strong>Prénom:</strong> {profile.prenom}</p>
-                        <p><strong>Email:</strong> {profile.email}</p>
-                        <p><strong>Adresse:</strong> {profile.adresse}</p>
-                        <p><strong>Date de Naissance:</strong> {profile.dateNaissance}</p>
-                        <p><strong>Téléphone:</strong> {profile.telephone}</p>
-                        <button onClick={() => setIsEditing(true)}>Modifier le Profil</button>
-                        <button onClick={() => setIsChangingPassword(true)}>Changer le Mot de Passe</button>
-                    </div>
-                ) : isEditing ? (
-                    <form onSubmit={handleSubmit} className="profile-form">
-                        <div className="form-group">
-                            <label>Nom</label>
-                            <input type="text" name="nom" value={profile.nom || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Prénom</label>
-                            <input type="text" name="prenom" value={profile.prenom || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Email</label>
-                            <input type="email" name="email" value={profile.email || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Adresse</label>
-                            <input type="text" name="adresse" value={profile.adresse || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Date de Naissance</label>
-                            <input type="date" name="dateNaissance" value={profile.dateNaissance || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-group">
-                            <label>Téléphone</label>
-                            <input type="tel" name="telephone" value={profile.telephone || ''} onChange={handleInputChange} />
-                        </div>
-                        <div className="form-actions">
-                            <button type="submit" className="save-button">Sauvegarder les Changements</button>
-                            <button type="button" className="cancel-button" onClick={() => setIsEditing(false)}>Annuler</button>
-                        </div>
-                    </form>
-                ) : (
-                    <form onSubmit={handlePasswordChange} className="password-form">
-                        <div className="form-group">
-                            <label>Nouveau mot de passe</label>
-                            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-                        </div>
-                        <div className="form-group">
-                            <label>Confirmer le nouveau mot de passe</label>
-                            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required />
-                        </div>
-                        <div className="form-actions">
-                            <button type="submit" className="save-button">Sauvegarder le mot de passe</button>
-                            <button type="button" className="cancel-button" onClick={() => setIsChangingPassword(false)}>Annuler</button>
-                        </div>
-                    </form>
-                )}
-            </div>
-        </div>
-    );
+/* Profile.css */
+.app {
+  display: flex;
+  font-family: 'Arial', sans-serif;
+  background: #eef2f5;
+  min-height: 100vh;
+  margin: 0;
 }
 
-export default ProfilePage;
+.menu {
+  background-color: #2c3e50;
+  padding: 20px;
+  width: 250px;
+  height: 100vh;
+  box-sizing: border-box;
+}
+
+.menu a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 15px;
+  font-size: 18px;
+  transition: color 0.3s ease;
+}
+
+.menu a:hover {
+  color: #1abc9c;
+}
+
+.profile-content {
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+}
+
+.profile-info,
+.profile-form,
+.password-form {
+  background: white;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 700px;
+  margin-top: 100px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-info:hover,
+.profile-form:hover,
+.password-form:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
+}
+
+.profile-info h2,
+.profile-form h2,
+.password-form h2 {
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.profile-info p {
+  font-size: 16px;
+  margin-bottom: 10px;
+  color: #34495e;
+}
+
+.profile-info p strong {
+  color: #2c3e50;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  font-size: 16px;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.form-group input,
+.form-group select {
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 16px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #1abc9c;
+}
+
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+button[type='submit'] {
+  background-color: #1abc9c;
+  color: white;
+}
+
+button[type='button'] {
+  background-color: #e74c3c;
+  color: white;
+  margin-left: 10px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button[type='submit']:hover {
+  background-color: #16a085;
+}
+
+button[type='button']:hover {
+  background-color: #c0392b;
+}
+
+@media (max-width: 768px) {
+  .menu {
+    width: 200px;
+  }
+
+  .profile-content {
+    padding: 20px;
+  }
+
+  .form-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  button[type='button'] {
+    margin-left: 0;
+  }
+
+  .profile-info,
+  .profile-form,
+  .password-form {
+    padding: 20px;
+    margin-top: -500px;
+  }
+
+  .profile-info p strong {
+    display: block;
+    width: 100%;
+  }
+}
